@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charaset="UTF-8">
+	<title>電卓っぽいやつ</title>
+	<style>
+		table {
+			border-collapse: collapse;
+		}
+		td {
+			border: solid 1px;
+			padding: 0.5em;
+		}
+		td#add {
+			background-color: #ffb6c1;
+		}
+		td#multi {
+			background-color: #ffa500;
+		}
+		td#div {
+			background-color: #7fff00;
+		}
+		td#sub {
+			background-color: #add8e6;
+		}
+		td#equal {
+			background-color: #f0e68c;
+		}
+	</style>
+	<script>
+		total = 0;           // 合計値
+		operatorType = "";   // 演算子
+		isPrevType = true;   // 判定用
+
+		 function setEvent() {
+		 
+		 	var viewValue = document.getElementById('viewValue'); 
+		 	
+		 	
+			// 数字ボタン
+			var numBtms = document.getElementsByClassName('numBtm'); 
+			for (var i = 0; i < numBtms.length; i++ ) {
+				numBtms[i].onclick = function(){number(this, viewValue);}
+			}
+
+			// CAボタン
+			var caBtm = document.getElementById('ca'); 
+			caBtm.onclick = function(){ca(this, viewValue);}
+
+			// 演算子ボタン
+			var opeBtms = document.getElementsByClassName('opeBtms'); 
+			for (var i = 0; i < opeBtms.length; i++ ) {
+				opeBtms[i].onclick = function(){operator(this, viewValue);}
+			}
+
+		}
+		
+		function ca(btn, viewValue) {
+			viewValue.innerHTML = '0';
+			viewValue.style.backgroundColor='#ffffff';
+			total = 0;
+			operatorType = "";
+			isPrevType = true;
+		}
+		
+		
+		function number(btn, viewValue) {
+			var btnNumber = btn.innerHTML;
+			// 演算子ボタン格納済み
+			if (isPrevType) {
+				viewValue.innerHTML = parseInt(viewValue.innerHTML + btnNumber);
+			} else {
+				total = viewValue.innerHTML;
+				viewValue.innerHTML = parseInt(btnNumber);
+			}
+			isPrevType = true;
+		}
+		
+		function operator(btn, viewValue) {
+			if (isPrevType) {
+				calculate();
+			}
+			switch (btn.innerHTML) {
+				case '×':
+					operatorType = '×';
+					viewValue.style.backgroundColor='#ffa500';
+					break;
+				case '÷':
+					operatorType = '÷';
+					viewValue.style.backgroundColor='#7fff00';
+					break;
+				case '＋':
+					operatorType = '＋';
+					viewValue.style.backgroundColor='#ffb6c1';
+					break;
+				case '－':
+					operatorType = '－';
+					viewValue.style.backgroundColor='#add8e6';
+					break;
+				case '＝':
+					operatorType = '＝';
+					viewValue.style.backgroundColor='#f0e68c';
+					break;
+				default :
+					break;
+			}
+			isPrevType = false;
+		}
+		
+		function calculate() {
+			viewValue = document.getElementById('viewValue');
+			switch (operatorType) {
+				case '÷':
+					var result = parseInt(total) / parseInt(viewValue.innerHTML);
+					viewValue.innerHTML = result;
+					total = result;
+					break;
+				case '×':
+					var result = parseInt(total) * parseInt(viewValue.innerHTML);
+					viewValue.innerHTML = result;
+					total = result;
+					break;
+				case '＋':
+					var result = parseInt(total) + parseInt(viewValue.innerHTML);
+					viewValue.innerHTML = result;
+					total = result;
+					break;
+				case '－':
+					var result = parseInt(total) - parseInt(viewValue.innerHTML);
+					viewValue.innerHTML = result;
+					total = result;
+					break;
+				default :
+					break;
+			}
+		}
+		
+		if (window.addEventListener) {
+			window.addEventListener('load',setEvent,false);
+		}else if (window.attachEvent) {
+			window.attachEvent('onload',setEvent);
+		}
+	
+	</script>
+</head>
+<body>
+
+	<h1>電卓っぽいやつ</h1>
+	<p id="total"></p><p id="operatorType"></p>
+	<table>
+		<tr>
+			<td colspan="3" id="viewValue" >0</td><td id="ca">CA</td>
+		</tr>
+		<tr>
+			<td class="numBtm">7</td><td class="numBtm">8</td><td class="numBtm">9</td><td id ="multi" class="opeBtms">×</td>
+		</tr>
+		<tr>
+			<td class="numBtm">4</td><td class="numBtm">5</td><td class="numBtm">6</td><td id ="div" class="opeBtms">÷</td>
+		</tr>
+		<tr>
+			<td  class="numBtm">1</td><td class="numBtm">2</td><td class="numBtm">3</td><td id ="sub" class="opeBtms">－</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="numBtm" >0</td><td id ="equal" class="opeBtms">＝</td><td id ="add" class="opeBtms">＋</td>
+		</tr>
+	</table>
+
+
+</body>
+</html>
