@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 	<meta charaset="UTF-8">
-	<title>電卓っぽいやつ</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title></title>
 	<style>
 		table {
 			border-collapse: collapse;
@@ -11,127 +12,149 @@
 			border: solid 1px;
 			padding: 0.5em;
 		}
-		td#add {
-			background-color: #ffb6c1;
-		}
-		td#multi {
-			background-color: #ffa500;
-		}
-		td#div {
-			background-color: #7fff00;
-		}
-		td#sub {
-			background-color: #add8e6;
-		}
-		td#equal {
-			background-color: #f0e68c;
-		}
+
 	</style>
 	<script>
 		total = 0;           // 合計値
-		operatorType = "";   // 演算子
+		operatorType = '';   // 演算子
 		isPrevType = true;   // 判定用
+		errFlg = false;      // エラー判定用
+		MAX_LENGTH = 10;
 
 		 function setEvent() {
 		 
 		 	var viewValue = document.getElementById('viewValue'); 
-		 	
-		 	
+		 	var command = document.getElementById('command');
+		 		 	
 			// 数字ボタン
-			var numBtms = document.getElementsByClassName('numBtm'); 
+			var numBtms = document.getElementsByName('numBtm'); 
+
 			for (var i = 0; i < numBtms.length; i++ ) {
-				numBtms[i].onclick = function(){number(this, viewValue);}
+				numBtms[i].onclick = function(){numberEx(this, viewValue, command);}
 			}
 
 			// CAボタン
 			var caBtm = document.getElementById('ca'); 
-			caBtm.onclick = function(){ca(this, viewValue);}
+			caBtm.onclick = function(){ca(this, viewValue, command);}
 
 			// 演算子ボタン
-			var opeBtms = document.getElementsByClassName('opeBtms'); 
+			var opeBtms = document.getElementsByName('opeBtms'); 
 			for (var i = 0; i < opeBtms.length; i++ ) {
-				opeBtms[i].onclick = function(){operator(this, viewValue);}
+				opeBtms[i].onclick = function(){operatorEx(this, viewValue, command);}
 			}
 
 		}
 		
-		function ca(btn, viewValue) {
+		function ca(btn, viewValue, command) {
 			viewValue.innerHTML = '0';
-			viewValue.style.backgroundColor='#ffffff';
+			command.innerHTML='';
 			total = 0;
-			operatorType = "";
+			operatorType = '';
 			isPrevType = true;
+			errFlg = false;
 		}
 		
+		// エラーチェック
+		// 999999999999を超えた。⇒処理終了⇒エラー文言を表示して、CA以外の入力および計算は許可しない。
+		function checkError(viewValue, command) {
+			// すでにエラーの場合はチェックしない
+			if (!errFlg) {
+				if (viewValue.innerHTML.length > MAX_LENGTH) {
+					errFlg = true;
+					viewValue.innerHTML = '0'
+					command.innerHTML = 'E'
+				}
+			}
+		}
 		
-		function number(btn, viewValue) {
-			var btnNumber = btn.innerHTML;
-			// 演算子ボタン格納済み
+		function numberEx(btn, viewValue, command) {
+			var btnNumber = btn.value;
+			// エラーが無ければ処理
+			if (!errFlg) {
+				// 演算子ボタン格納済み
+				if (isPrevType) {
+					if (viewValue.innerHTML == '0') {
+						viewValue.innerHTML = btnNumber;
+					} else {
+						viewValue.innerHTML = parseInt(viewValue.innerHTML + btnNumber);
+						checkError(viewValue, command);
+					}
+					
+				} else {
+					total = viewValue.innerHTML;
+					viewValue.innerHTML = parseInt(btnNumber);
+				}
+				isPrevType = true;
+			}
+		}
+		
+		function operatorEx(btn, viewValue, command) {
 			if (isPrevType) {
-				viewValue.innerHTML = parseInt(viewValue.innerHTML + btnNumber);
-			} else {
-				total = viewValue.innerHTML;
-				viewValue.innerHTML = parseInt(btnNumber);
+				calculate(viewValue, command);
 			}
-			isPrevType = true;
+			checkError(viewValue, command);
+			if (!errFlg) {
+				switch (btn.value) {
+					case '×':
+						operatorType = '×';
+						command.innerHTML = '×';
+						break;
+					case '÷':
+						operatorType = '÷';
+						command.innerHTML = '÷';
+						break;
+					case '＋':
+						operatorType = '＋';
+						command.innerHTML = '＋';
+						break;
+					case '－':
+						operatorType = '－';
+						command.innerHTML = '－';
+						break;
+					case '＝':
+						operatorType = '＝';
+						command.innerHTML = '';
+						break;
+					default :
+						break;
+				}
+				isPrevType = false;
+			}
 		}
 		
-		function operator(btn, viewValue) {
-			if (isPrevType) {
-				calculate();
-			}
-			switch (btn.innerHTML) {
-				case '×':
-					operatorType = '×';
-					viewValue.style.backgroundColor='#ffa500';
-					break;
-				case '÷':
-					operatorType = '÷';
-					viewValue.style.backgroundColor='#7fff00';
-					break;
-				case '＋':
-					operatorType = '＋';
-					viewValue.style.backgroundColor='#ffb6c1';
-					break;
-				case '－':
-					operatorType = '－';
-					viewValue.style.backgroundColor='#add8e6';
-					break;
-				case '＝':
-					operatorType = '＝';
-					viewValue.style.backgroundColor='#f0e68c';
-					break;
-				default :
-					break;
-			}
-			isPrevType = false;
-		}
-		
-		function calculate() {
-			viewValue = document.getElementById('viewValue');
-			switch (operatorType) {
-				case '÷':
-					var result = parseInt(total) / parseInt(viewValue.innerHTML);
-					viewValue.innerHTML = result;
-					total = result;
-					break;
-				case '×':
-					var result = parseInt(total) * parseInt(viewValue.innerHTML);
-					viewValue.innerHTML = result;
-					total = result;
-					break;
-				case '＋':
-					var result = parseInt(total) + parseInt(viewValue.innerHTML);
-					viewValue.innerHTML = result;
-					total = result;
-					break;
-				case '－':
-					var result = parseInt(total) - parseInt(viewValue.innerHTML);
-					viewValue.innerHTML = result;
-					total = result;
-					break;
-				default :
-					break;
+		function calculate(viewValue, command) {
+			if (!errFlg) {
+				switch (operatorType) {
+					case '÷':
+						// 0除算はエラー
+						if (viewValue.innerHTML == '0') {
+							errFlg = true;
+							viewValue.innerHTML = '除算はできません。'
+							command.innerHTML = 'E'
+						} else {
+							var result = Math.round(parseInt(total) / parseInt(viewValue.innerHTML));
+							viewValue.innerHTML = result;
+							total = result;
+						}
+						break;
+					case '×':
+						var result = parseInt(total) * parseInt(viewValue.innerHTML);
+						viewValue.innerHTML = result;
+						total = result;
+						break;
+					case '＋':
+						var result = parseInt(total) + parseInt(viewValue.innerHTML);
+						viewValue.innerHTML = result;
+						total = result;
+						break;
+					case '－':
+						var result = parseInt(total) - parseInt(viewValue.innerHTML);
+						viewValue.innerHTML = result;
+						total = result;
+						break;
+					default :
+						break;
+				}
 			}
 		}
 		
@@ -145,23 +168,23 @@
 </head>
 <body>
 
-	<h1>電卓っぽいやつ</h1>
+	<h1></h1>
 	<p id="total"></p><p id="operatorType"></p>
 	<table>
 		<tr>
-			<td colspan="3" id="viewValue" >0</td><td id="ca">CA</td>
+			<td id="command" ></td><td colspan="2" id="viewValue" >0</td><td><input type="button"  id="ca" value="CA" /></td>
 		</tr>
 		<tr>
-			<td class="numBtm">7</td><td class="numBtm">8</td><td class="numBtm">9</td><td id ="multi" class="opeBtms">×</td>
+			<td><input type="button"  name="numBtm" value="7" /></td><td><input type="button"  name="numBtm" value="8" /></td><td><input type="button"  name="numBtm" value="9" /></td><td id ="multi"><input type="button"  name="opeBtms" value="×" /></td>
 		</tr>
 		<tr>
-			<td class="numBtm">4</td><td class="numBtm">5</td><td class="numBtm">6</td><td id ="div" class="opeBtms">÷</td>
+			<td><input type="button"  name="numBtm" value="4" /></td><td><input type="button"  name="numBtm" value="5" /></td><td><input type="button"  name="numBtm" value="6" /></td><td id ="div"><input type="button"  name="opeBtms" value="÷" /></td>
 		</tr>
 		<tr>
-			<td  class="numBtm">1</td><td class="numBtm">2</td><td class="numBtm">3</td><td id ="sub" class="opeBtms">－</td>
+			<td><input type="button"  name="numBtm" value="1" /></td><td><input type="button"  name="numBtm" value="2" /></td><td><input type="button"  name="numBtm" value="3" /></td><td id ="sub"><input type="button"  name="opeBtms" value="－" /></td>
 		</tr>
 		<tr>
-			<td colspan="2" class="numBtm" >0</td><td id ="equal" class="opeBtms">＝</td><td id ="add" class="opeBtms">＋</td>
+			<td colspan="2"><input type="button"  name="numBtm" value="0" /></td><td id ="equal"><input type="button"  name="opeBtms" value="＝" /></td><td id ="add"><input type="button"  name="opeBtms" value="＋" /></td>
 		</tr>
 	</table>
 
